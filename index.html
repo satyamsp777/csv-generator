@@ -216,7 +216,7 @@
           // Generate CSV content
           var csvContent = "data:text/csv;charset=utf-8,";
           csvContent +=
-            "SRNO,BENENAME,IMPS,ACCOUNT NO,AMOUNT,IFSC CODE,91BENEMOBILE NUMBER,DESCRIPTION\n";
+            "SRNO,BENENAME,NEFT,ACCOUNT NO,AMOUNT,IFSC CODE,91BENEMOBILE NUMBER,DESCRIPTION\n";
 
           entries.forEach(function (entry) {
             var values = Object.values(entry).map(function (value) {

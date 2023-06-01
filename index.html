@@ -227,10 +227,15 @@
           csvContent +=
             "SRNO,BENENAME,NEFT,ACCOUNT NUMBER,AMOUNT,IFSC CODE,91BENEMOBILE NUMBER,DESCRIPTION\n";
 
-          entries.forEach(function (entry) {
-            var values = Object.values(entry).map(function (value) {
-              return '"' + value + '"';
-            });
+//           entries.forEach(function (entry) {
+//             var values = Object.values(entry).map(function (value) {
+//               return '"' + value + '"';
+//             });
+//             csvContent += values.join(",") + "\n";
+//           });
+        
+        entries.forEach(function (entry) {
+            var values = Object.values(entry);
             csvContent += values.join(",") + "\n";
           });
 

@@ -235,10 +235,24 @@
           });
 
           // Create a CSV file
+          var options = {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Kolkata",
+          };
+          var currentDateTime = new Date()
+            .toLocaleString("en-IN", options)
+            .replace(/\//g, "-")
+            .replace(",", "")
+            .replace(/ /g, "_");
+          var fileName = `${currentDateTime}.csv`;
           var encodedUri = encodeURI(csvContent);
           var link = document.createElement("a");
           link.setAttribute("href", encodedUri);
-          link.setAttribute("download", "output.csv");
+          link.setAttribute("download", fileName);
           document.body.appendChild(link);
 
           // Trigger the download

@@ -107,14 +107,16 @@
           div.id = `column_${numColumns}`;
           div.innerHTML = `
           <h2>Entry ${numColumns}</h2>
-          <label for="username_${numColumns}">Username:</label>
-          <input type="text" id="username_${numColumns}" name="username_${numColumns}" required><br><br>
           <label for="accountNo_${numColumns}">Account No:</label>
           <input type="number" id="accountNo_${numColumns}" name="accountNo_${numColumns}" required><br><br>
-          <label for="amount_${numColumns}">Amount:</label>
-          <input type="number" id="amount_${numColumns}" name="amount_${numColumns}" required><br><br>
+          <label for="name_${numColumns}">Name:</label>
+          <input type="text" id="name_${numColumns}" name="name_${numColumns}" required><br><br>
           <label for="ifscCode_${numColumns}">IFSC Code:</label>
           <input type="text" id="ifscCode_${numColumns}" name="ifscCode_${numColumns}" oninput="this.value = this.value.toUpperCase()" pattern="[A-Za-z0-9]{11}" required><br><br>
+          <label for="amount_${numColumns}">Amount:</label>
+          <input type="number" id="amount_${numColumns}" name="amount_${numColumns}" required><br><br>
+          <label for="username_${numColumns}">Username:</label>
+          <input type="text" id="username_${numColumns}" name="username_${numColumns}" required><br><br>
           <button type="button" onclick="deleteColumn(${numColumns})">Delete</button>
         `;
 
@@ -142,6 +144,13 @@
           var columnIndex = i + 1;
           column.id = `column_${columnIndex}`;
           column.querySelector("h2").textContent = `Column ${columnIndex}`;
+          column
+            .querySelector('label[for^="name_"]')
+            .setAttribute("for", `name_${columnIndex}`);
+          column.querySelector('input[id^="name_"]').id = `name_${columnIndex}`;
+          column.querySelector(
+            'input[name^="name_"]'
+          ).name = `name_${columnIndex}`;
           column
             .querySelector('label[for^="username_"]')
             .setAttribute("for", `username_${columnIndex}`);
@@ -201,7 +210,7 @@
           for (var i = 0; i < numEntries; i++) {
             var entry = {
               srNo: i + 1,
-              beneName: document.getElementById(`username_${i + 1}`).value,
+              beneName: document.getElementById(`name_${i + 1}`).value,
               imps: "IMPS",
               accountNo: document.getElementById(`accountNo_${i + 1}`).value,
               amount: document.getElementById(`amount_${i + 1}`).value,

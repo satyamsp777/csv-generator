@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV Generator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      #csvForm {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      #entryContainer {
+        margin-bottom: 20px;
+      }
+
+      .column {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .column h2 {
+        font-size: 18px;
+        margin-top: 0;
+      }
+
+      .column label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .column input[type="text"],
+      .column input[type="number"] {
+        width: 100%;
+        padding: 5px;
+        font-size: 14px;
+      }
+
+      .column button {
+        margin-top: 10px;
+        background-color: #f44336;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+
+      .button-container {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .button-container button {
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      .entry {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>CSV Generator</h1>
+    <form id="csvForm" onsubmit="submitForm(event)">
+      <div id="entryContainer">
+        <div class="column">
+          <label for="accountNo">Account No:</label>
+          <input
+            type="number"
+            id="accountNo"
+            name="accountNo"
+            required
+          /><br /><br />
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" required /><br /><br />
+          <label for="ifscCode">IFSC Code:</label>
+          <input
+            type="text"
+            id="ifscCode"
+            name="ifscCode"
+            oninput="this.value = this.value.toUpperCase()"
+            pattern="[A-Za-z0-9]{11}"
+            required
+          /><br /><br />
+          <label for="amount">Amount:</label>
+          <input type="number" id="amount" name="amount" required /><br /><br />
+          <label for="username">Username:</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            required
+          /><br /><br />
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button type="button" onclick="addEntry()">Add Entry</button>
+        <button type="submit" onclick="submitForm(event)">Submit</button>
+      </div>
+
+      <div id="entryList"></div>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        $("#accountNo").on("input", function () {
+          const accountNumber = $(this).val();
+
+          $.get(`/accounts/${accountNumber}`, function (data) {
+            // Account exists, prefill other fields
+            $("#name").val(data.beneName);
+            $("#ifscCode").val(data.ifscCode);
+            $("#amount").val(data.amount);
+            $("#username").val(data.description);
+          }).fail(function () {
+            // Account not found, clear other fields
+            $("#name").val("");
+            $("#ifscCode").val("");
+            $("#amount").val("");
+            $("#username").val("");
+          });
+        });
+      });
+    </script>
+    <script>
+      var entries = [];
+
+      function addEntry() {
+        var accountNo = document.getElementById("accountNo").value;
+        var beneName = document.getElementById("name").value;
+        var ifscCode = document.getElementById("ifscCode").value;
+        var amount = document.getElementById("amount").value;
+        var description = document.getElementById("username").value;
+
+        // Validate the input values
+        if (!accountNo || !beneName || !ifscCode || !amount || !description) {
+          alert("Please fill in all fields.");
+          return;
+        }
+
+        var entry = {
+          accountNo: accountNo,
+          beneName: beneName,
+          ifscCode: ifscCode,
+          amount: amount,
+          description: description,
+        };
+
+        entries.push(entry);
+
+        // Clear the input fields
+        document.getElementById("accountNo").value = "";
+        document.getElementById("name").value = "";
+        document.getElementById("ifscCode").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("username").value = "";
+
+        displayEntries();
+      }
+
+      function displayEntries() {
+        var entryList = document.getElementById("entryList");
+        entryList.innerHTML = "";
+
+        entries.forEach(function (entry, index) {
+          var entryDiv = document.createElement("div");
+          entryDiv.className = "entry";
+
+          var entryHeading = document.createElement("h3");
+          entryHeading.innerText = "Entry " + (index + 1);
+
+          var entryData = document.createElement("p");
+          entryData.innerHTML =
+            "<strong>Account No:</strong> " +
+            entry.accountNo +
+            "<br>" +
+            "<strong>Name:</strong> " +
+            entry.beneName +
+            "<br>" +
+            "<strong>IFSC Code:</strong> " +
+            entry.ifscCode +
+            "<br>" +
+            "<strong>Amount:</strong> " +
+            entry.amount +
+            "<br>" +
+            "<strong>Username:</strong> " +
+            entry.description;
+
+          entryDiv.appendChild(entryHeading);
+          entryDiv.appendChild(entryData);
+
+          entryList.appendChild(entryDiv);
+        });
+      }
+      function submitForm(event) {
+        event.preventDefault();
+
+        if (entries.length === 0) {
+          alert("Please add entries before submitting the form.");
+          return;
+        }
+
+        // Generate the CSV content
+        var csvContent =
+          "SRNO,BENENAME,NEFT,ACCOUNT NUMBER,AMOUNT,IFSC CODE,91BENEMOBILE NUMBER,DESCRIPTION\n";
+        let srno = 1;
+        entries.forEach(function (entry) {
+          csvContent +=
+            srno++ +
+            "," +
+            entry.beneName +
+            "," +
+            "IMPS" +
+            "," +
+            entry.accountNo +
+            "," +
+            entry.amount +
+            "," +
+            entry.ifscCode +
+            "," +
+            "9522931970" +
+            "," +
+            entry.description +
+            "\n";
+        });
+
+        // Create a Blob object for the CSV data
+        var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+        // Generate a unique filename for the CSV file
+        var timestamp = new Date().toISOString().replace(/:/g, "-");
+        var fileName = "entries_" + timestamp + ".csv";
+
+        // Create a temporary link element to trigger the file download
+        var link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = fileName;
+
+        // Append the link to the document and trigger the click event
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        fetch("/save", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ csvContent: csvContent, entries: entries }),
+        })
+          .then(function (response) {
+            if (response.ok) {
+              console.log("Entries saved successfully");
+
+              // Trigger the download
+              response.blob().then(function (blob) {
+                var link = document.createElement("a");
+                link.setAttribute("href", URL.createObjectURL(blob));
+                link.setAttribute("download", "output.csv");
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              });
+
+              // Reset form and reload the page
+              document.getElementById("csvForm").reset();
+              window.location.reload();
+            } else {
+              console.error("Failed to save entries");
+              alert("Failed to save entries. Please try again.");
+            }
+          })
+          .catch(function (error) {
+            console.error("Error occurred while saving entries", error);
+            alert("An error occurred while saving entries. Please try again.");
+          });
+
+        // Clear the entries array and update the display
+        entries = [];
+        displayEntries();
+      }
+    </script>
+  </body>
+</html>
